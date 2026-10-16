@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  api:
+    # Build the Docker image from the Dockerfile in the current directory.
+    build: .
+    # Expose port 8000 of the container to port 8000 on the host machine.
+    ports:
+      - "8000:8000"
+    # Pass environment variables to the service.
+    # ANTHROPIC_API_KEY is needed if you use the Claude API.
+    # Leave it blank or unset if using a local Ollama model.
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - DATABASE_URL=sqlite:///./data/sales.db
+    # Mount the local ./data directory into the container at /app/data.
+    # This makes the sales.db file available to the application.
+    volumes:
+      - ./data:/app/data
+    # Health check to ensure the API is responsive before marking the container as healthy.
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
